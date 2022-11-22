@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from NakPos import NakPos
+from datetime import datetime
+from .NakPos import NakPos
+from .Document import Document
 
-class Nakladnaya(object):
+
+class Nakladnaya(Document):
 
     def __init__(self, number=None):
         '''
@@ -13,8 +16,17 @@ class Nakladnaya(object):
                добавить: адрес доставки, дата выписки, 
                дата отправки, дата факт доставки.
         '''
-        self.__number = number
+        super().__init__(number)
+        self.__address = None
         self.__positions = []
+        
+    @property
+    def address(self):
+        return self.__address
+    
+    @address.setter
+    def address(self, new_address):
+        self.__address = new_address
     
     @property
     def itogo (self):
@@ -28,7 +40,11 @@ class Nakladnaya(object):
         
     def show(self):
         print(40*'=')
-        print(f'Накладная No {self.__number}')
+        print(f'Накладная No {self.number}')
+        ct = self.created.strftime('%Y.%m.%d %H:%M')
+        print(f'  Создана: {ct}')
+        if self.address is not None:
+            print(f'  Адрес доставки: {self.address}')
         print(40*'-')
         for k, pos in enumerate(self.__positions, 1):
             print(f'{k:2}. {pos}')
