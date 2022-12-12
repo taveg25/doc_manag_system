@@ -4,7 +4,7 @@
 
 class NakPos(object):
     
-    def __init__(self, title, quantity=1, price=None, summa=None):
+    def __init__(self, title, quantity=1, price=None, summa=None,):
         self.__title = title
         self.__quantity = quantity
         self.__price = price
@@ -45,9 +45,19 @@ class NakPos(object):
     @summa.deleter
     def summa(self):
         self.__summa = None
+        
+    @property
+    def good(self):
+        if self.__price is None:
+            return self.__summa is not None
+        return self.quantity * self.price == self.summa
+            
     
     def __str__(self):
-        return f'{self.title:15} {self.quantity:2} {self.price:5.2f} {self.summa:6.2f}'
+        if self.__price is None:
+            return f'{self.title:15} {self.quantity:2}  ---  {self.summa:6.2f}'
+        else:
+            return f'{self.title:15} {self.quantity:2} {self.price:5.2f} {self.summa:6.2f}'
     
     
     

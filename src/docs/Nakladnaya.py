@@ -27,6 +27,14 @@ class Nakladnaya(Document):
     @address.setter
     def address(self, new_address):
         self.__address = new_address
+        
+    @property
+    def good(self):
+        if self.__address is None:
+            return False
+        if len(self.__positions) == 0:
+            return False
+        return all( (p.good for p in self.__positions) )
     
     @property
     def itogo (self):
@@ -40,6 +48,8 @@ class Nakladnaya(Document):
         
     def show(self):
         print(40*'=')
+        if not self.good:
+            print('ПЛОХаЯ НАКлАДАНАЯ')
         print(f'Накладная No {self.number}')
         ct = self.created.strftime('%Y.%m.%d %H:%M')
         print(f'  Создана: {ct}')

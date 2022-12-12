@@ -4,25 +4,40 @@
 import docs
 from decimal import Decimal
 import pickle
+from MyCmdParams import MyCmdParams
+from MyConfig import MyConfig
+from myhttp import MyHttpServer
 
 
-class Application(object):
+class Application(MyCmdParams, MyConfig):
     
     def __init__(self):
+        MyCmdParams.__init__(self)
+        MyConfig.__init__(self, self.config_path)
         self.__current_document = None
         self.__no_doc = {
             '1': ('Создать накладную', self.create_nakl),
+            'V':('Создать счет-фактуру', self.create_invoice),
             '7': ('Загрузить из файла', self.load_doc),
 
         }
-        self.__with_doc = {
+        self.__with_nakladnaya = {
             '2': ('Добавить позицию', self.add_pos_to_nakl),
             '3': ('Показать накладную', self.current_doc_show),
-            '4': ('Сменить номер накладной', self.change_nakl_number),
+            '4': ('Сменить номер накладной', self.change_number),
             '5': ('Сохранить в файл', self.save_current_doc),
-            '6': ('Уничтожить накладную', self.kill_current_doc),
+            '6': ('Уничтожить документ', self.kill_current_doc),
+            'A': ('Добавить адрес доставки', self.set_address),
             
         }
+        self.__with_invoice = {
+
+            '3': ('Показать', self.current_doc_show),
+            '4': ('Сменить номер документа', self.change_number),
+            '5': ('Сохранить в файл', self.save_current_doc),
+            '6': ('Уничтожить документ', self.kill_current_doc),
+        }
+        
         
     def available_commands(self):
         '''
@@ -31,8 +46,12 @@ class Application(object):
         '''
         if self.__current_document is None:
             return self.__no_doc
+        elif isinstance(self.__current_document, docs.Nakladnaya):
+            return self.__with_nakladnaya
+        elif isinstance(self.__current_document, docs.Invoice):
+            return self.__with_invoice
         else:
-            return self.__with_doc
+            raise NotImplementedError ('Unknown document type')
         
     def user_action_sequence(self):
         '''
@@ -56,7 +75,15 @@ class Application(object):
     def create_nakl(self):
         num = input('Номер: ').strip()
         self.__current_document = docs.Nakladnaya(number=int(num))
-            
+    
+    def create_invoice(self):
+        num = input('Номер: ').strip()
+        self.__current_document = docs.Invoice(number=int(num))
+    
+    def set_address(self):
+        address = input('Адрес доставки:').strip()
+        self.__current_document.address = address
+    
     def add_pos_to_nakl(self):
         title = input('Наименование: ').strip()
         quantity = int(input('Количество: ').strip())
@@ -72,7 +99,7 @@ class Application(object):
             summa = Decimal(summa).quantize(Decimal('0.01'))
         self.__current_document.add_pos(title, quantity, price, summa)
         
-    def change_nakl_number(self):
+    def change_number(self):
         number = input('Новый номер: ').strip()
         self.__current_document.number = int(number)
         
@@ -93,9 +120,15 @@ class Application(object):
             self.__current_document = pickle.load(src, fix_imports=False)
         
     def run(self):
-        for action_func in self.user_action_sequence():
-            action_func()
-            
+        wp_addr, wp_port = self.workplace(self.wp_name)
+        srv_address = ('', wp_port)
+        server, thread = MyHttpServer.srv_start(srv_address,20) 
+        try:
+            for action_func in self.user_action_sequence():
+                action_func()
+        finally:
+            server.shutdown()
+            thread.join(5.0)
             
             
             

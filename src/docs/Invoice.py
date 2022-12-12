@@ -16,3 +16,6 @@ class Invoice(Document):
     @contragent.setter
     def contragent(self, new_value):
         self.__contragent = new_value
+        
+        
+    #написать функцию шоу
