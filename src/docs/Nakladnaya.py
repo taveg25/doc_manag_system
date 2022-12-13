@@ -18,6 +18,7 @@ class Nakladnaya(Document):
         '''
         super().__init__(number)
         self.__address = None
+        self.__subscribe = None
         self.__positions = []
         
     @property
@@ -26,8 +27,10 @@ class Nakladnaya(Document):
     
     @address.setter
     def address(self, new_address):
-        self.__address = new_address
-        
+        if self.__subscribe is None:
+            self.__address = new_address
+        else:
+            print('В подписанную накладную изменения не вносят')
     @property
     def good(self):
         if self.__address is None:
@@ -36,15 +39,30 @@ class Nakladnaya(Document):
             return False
         return all( (p.good for p in self.__positions) )
     
+    
+    @property
+    def subscribe(self):
+        return self.__subscribe
+    
+    @subscribe.setter
+    def subscribe(self, new_subscribe):
+        if self.good:
+            self.__subscribe = new_subscribe
+        else:
+            print('Плохую накладную нельзя подписывать')
+    
     @property
     def itogo (self):
         s = ( x.summa for x in self.__positions )
         return sum(s)
         
     def add_pos(self, *args, **kwargs):
-
-        pos = NakPos(*args, **kwargs)
-        self.__positions.append(pos)
+        if self.__subscribe is None:
+            pos = NakPos(*args, **kwargs)
+            self.__positions.append(pos)
+        else:
+            print('В подписанную накладную изменения не вносят')
+        
         
     def show(self):
         print(40*'=')
@@ -59,4 +77,6 @@ class Nakladnaya(Document):
         for k, pos in enumerate(self.__positions, 1):
             print(f'{k:2}. {pos}')
         print(f'Итого: {self.itogo:7.2f}')
+        if self.subscribe is not None:
+            print(f'Накладная подписана: {self.subscribe}')
         print(40*'=')

@@ -28,6 +28,7 @@ class Application(MyCmdParams, MyConfig):
             '5': ('Сохранить в файл', self.save_current_doc),
             '6': ('Уничтожить документ', self.kill_current_doc),
             'A': ('Добавить адрес доставки', self.set_address),
+            'S': ('Подписать накладную', self.subscribe_nakl),
             
         }
         self.__with_invoice = {
@@ -83,6 +84,10 @@ class Application(MyCmdParams, MyConfig):
     def set_address(self):
         address = input('Адрес доставки:').strip()
         self.__current_document.address = address
+    
+    def subscribe_nakl(self):
+        user = self.wp_name
+        self.__current_document.subscribe = user
     
     def add_pos_to_nakl(self):
         title = input('Наименование: ').strip()

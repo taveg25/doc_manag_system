@@ -9,7 +9,6 @@ class Document(object):
     def __init__(self, number=None):
         self.__created = datetime.now()
         self.__number = number
-
     
     @property
     def created(self):
@@ -22,7 +21,7 @@ class Document(object):
     @number.setter
     def number(self, new_number):
         self.__number = new_number
-        
+
     def show(self):
         print(40*'=')
         print(f'Документ No {self.number}')
